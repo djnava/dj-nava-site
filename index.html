@@ -136,7 +136,7 @@ nav.top.scrolled { padding: 10px 28px; background: rgba(5,0,13,.85); }
 .hero {
   min-height: 100vh;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 90px 24px 40px;
+  padding: 76px 24px 20px;
   text-align: center; position: relative; overflow: hidden;
 }
 .equalizer {
@@ -168,7 +168,7 @@ nav.top.scrolled { padding: 10px 28px; background: rgba(5,0,13,.85); }
 .logo-img {
   position: relative;
   z-index: 3;
-  width: min(640px, 92vw);
+  width: min(640px, 92vw, 48vh);
   height: auto;
   display: block;
   filter: drop-shadow(0 0 10px rgba(168,85,247,.85)) drop-shadow(0 0 28px rgba(34,211,238,.55)) drop-shadow(0 0 54px rgba(236,72,153,.35));
@@ -222,7 +222,7 @@ nav.top.scrolled { padding: 10px 28px; background: rgba(5,0,13,.85); }
 .logo-stack {
   position: relative; z-index: 2;
   display: flex; flex-direction: column; align-items: center; gap: 0;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   animation: floaty 6s ease-in-out infinite;
 }
 @keyframes floaty {
@@ -256,7 +256,7 @@ nav.top.scrolled { padding: 10px 28px; background: rgba(5,0,13,.85); }
 .subtag {
   position: relative; z-index: 2;
   color: var(--ink-mute);
-  max-width: 620px; margin: 0 auto 18px;
+  max-width: 620px; margin: 0 auto 12px;
   font-size: 15px;
 }
 .hero-ctas { position: relative; z-index: 2; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
@@ -1338,8 +1338,8 @@ let isLive = false;
 header.addEventListener('click', () => dock.classList.toggle('collapsed'));
 toggle.addEventListener('click', e => { e.stopPropagation(); dock.classList.toggle('collapsed'); });
 
-/* On phones the dock starts collapsed so it doesn't cover content. Visitor can tap to expand. */
-if (window.innerWidth <= 640) dock.classList.add('collapsed');
+/* Dock starts collapsed/minimized for every visitor. Tap the header to expand. */
+dock.classList.add('collapsed');
 
 /* Try to use the SoundCloud Widget API. If it's blocked (Brave Shields, ad-blocker),
    that's OK — the visible widget itself still has its own play button which is
