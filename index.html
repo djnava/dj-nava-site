@@ -159,6 +159,18 @@ nav.top.scrolled { padding: 10px 28px; background: rgba(5,0,13,.85); }
   80% { height: 40%; }
 }
 
+.logo-img-wrap {
+  background: #000;
+  padding: 32px 48px;
+  border-radius: 20px;
+  box-shadow: 0 0 40px rgba(168,85,247,.35), 0 0 80px rgba(34,211,238,.2);
+  display: inline-block;
+}
+.logo-img {
+  width: min(420px, 70vw);
+  height: auto;
+  display: block;
+}
 .logo-stack {
   position: relative; z-index: 2;
   display: flex; flex-direction: column; align-items: center; gap: 0;
@@ -745,8 +757,9 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
   </div>
 
   <div class="logo-stack" id="logo-stack">
-    <div class="row one"><span class="ltr">D</span><span class="ltr">J</span></div>
-    <div class="row two"><span class="ltr">N</span><span class="ltr">A</span><span class="ltr">V</span><span class="ltr">A</span></div>
+    <div class="logo-img-wrap">
+      <img src="dj-nava-logo.png" alt="DJ NAVA logo" class="logo-img">
+    </div>
   </div>
 
   <p class="tagline">TELUGU · TAMIL · BOLLY · PUNJABI · HIP-HOP · ORIGINALS</p>
