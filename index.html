@@ -340,7 +340,7 @@ h2.section-title {
   animation: spin 24s linear infinite;
   box-shadow: 0 0 60px rgba(168,85,247,.4), 0 0 120px rgba(34,211,238,.2);
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .about-visual::before {
   content: ''; position: absolute; inset: 18px; border-radius: 50%;
   background: radial-gradient(circle, var(--bg-1), var(--bg-0));
@@ -348,7 +348,7 @@ h2.section-title {
 }
 .about-visual .deck-label {
   position: relative; z-index: 2;
-  width: 84%;
+  width: 93%;
   height: auto;
   display: block;
   filter: drop-shadow(0 0 14px rgba(168,85,247,.7));
