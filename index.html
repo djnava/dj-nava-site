@@ -347,10 +347,11 @@ h2.section-title {
   z-index: 1;
 }
 .about-visual .deck-label {
-  position: relative; z-index: 2; font-family: 'Audiowide', sans-serif;
-  font-size: clamp(34px, 4vw, 56px); color: #fff;
-  text-shadow: var(--glow-purple);
-  letter-spacing: 4px;
+  position: relative; z-index: 2;
+  width: 58%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 0 14px rgba(168,85,247,.7));
   animation: spin 24s linear infinite reverse;
 }
 
@@ -846,7 +847,7 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
         </div>
       </div>
       <div class="about-visual reveal" aria-hidden="true">
-        <span class="deck-label">NAVA</span>
+        <img class="deck-label" src="dj-nava-logo.png" alt="" />
       </div>
     </div>
   </div>
