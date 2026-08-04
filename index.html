@@ -164,8 +164,8 @@ nav.top.scrolled { padding: 10px 28px; background: rgba(5,0,13,.85); }
   display: inline-block;
   padding: 26px 14px;
   isolation: isolate;
-  transform: scale(1.35);
-  transform-origin: center bottom;
+  transform: translateY(-15px) scale(1.75);
+  transform-origin: center center;
 }
 .logo-img {
   position: relative;
@@ -199,6 +199,7 @@ nav.top.scrolled { padding: 10px 28px; background: rgba(5,0,13,.85); }
   animation: logoHue 7s linear infinite reverse, floaty 7s ease-in-out infinite reverse;
 }
 .logo-color-mask {
+  display: none;
   position: absolute;
   top: 26px; left: 14px; right: 14px; bottom: 26px;
   z-index: 2;
