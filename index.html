@@ -338,13 +338,13 @@ h2.section-title {
   border-radius: 50%;
   background: conic-gradient(from 0deg, var(--neon-purple), var(--neon-teal), var(--neon-pink), var(--neon-purple));
   display: flex; align-items: center; justify-content: center;
-  animation: spin 24s linear infinite;
+  animation: spin 4s linear infinite;
   box-shadow: 0 0 60px rgba(168,85,247,.4), 0 0 120px rgba(34,211,238,.2);
 }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .about-visual::before {
   content: ''; position: absolute; inset: 18px; border-radius: 50%;
-  background: radial-gradient(circle, var(--bg-1), var(--bg-0));
+  background: repeating-radial-gradient(circle at center, #050505 0px, #101010 2px, #050505 4px);
   z-index: 1;
 }
 .about-visual .deck-label {
@@ -625,7 +625,7 @@ footer {
 .marquee::after  { right: 0; background: linear-gradient(270deg, var(--bg-0), transparent); }
 .marquee-track {
   display: flex; gap: 60px; white-space: nowrap;
-  animation: scrollX 36s linear infinite;
+  animation: scrollX 18s linear infinite;
   font-family: 'Audiowide', sans-serif; font-size: 24px; letter-spacing: 4px;
 }
 .marquee-track span {
@@ -704,7 +704,7 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
 
   /* Marquee: smaller, less aggressive */
   .marquee { padding: 16px 0; }
-  .marquee-track { gap: 36px; font-size: 16px; letter-spacing: 3px; animation-duration: 28s; }
+  .marquee-track { gap: 36px; font-size: 16px; letter-spacing: 3px; animation-duration: 14s; }
   .marquee-track span { gap: 36px; }
   .marquee-track span::after { font-size: 9px; }
 
@@ -1128,7 +1128,7 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
         <div class="field">
           <label>Your rating</label>
           <div class="stars" aria-label="Rating">
-            <input type="radio" name="rating" id="s5" value="5" required><label for="s5">★</label>
+            <input type="radio" name="rating" id="s5" value="5" required checked><label for="s5">★</label>
             <input type="radio" name="rating" id="s4" value="4"><label for="s4">★</label>
             <input type="radio" name="rating" id="s3" value="3"><label for="s3">★</label>
             <input type="radio" name="rating" id="s2" value="2"><label for="s2">★</label>
