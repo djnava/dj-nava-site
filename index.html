@@ -500,12 +500,12 @@ form.fancy button[type="submit"]:hover { transform: translateY(-3px); }
 .stars { display: flex; gap: 6px; }
 .stars input { display: none; }
 .stars label {
-  font-size: 28px; cursor: pointer; color: rgba(255,255,255,.2);
+  font-size: 34px; cursor: pointer; color: rgba(255,255,255,.3);
   transition: color .15s, transform .15s;
   margin: 0; letter-spacing: 0;
 }
 .stars label:hover, .stars label:hover ~ label,
-.stars input:checked ~ label { color: var(--neon-purple); text-shadow: var(--glow-purple); }
+.stars input:checked ~ label { color: #c084fc; text-shadow: 0 0 10px rgba(192,132,252,.95), 0 0 30px rgba(168,85,247,.6); }
 .stars { direction: rtl; justify-content: flex-end; }
 .stars label:hover { transform: scale(1.15); }
 
@@ -690,7 +690,7 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
   .eyebrow { font-size: 12px; letter-spacing: 4px; }
 
   /* Bump touch targets */
-  .icon-btn { width: 44px; height: 44px; border-radius: 14px; }
+  .icon-btn { width: 44px; height: 44px; border-radius: 14px; } .stars { gap: 14px; } .stars label { font-size: 44px; padding: 2px 4px; }
   .icon-btn svg { width: 20px; height: 20px; }
   .nav-links a { padding: 12px 0; font-size: 14px; }
   .cta-nav { padding: 11px 22px; font-size: 13px; }
@@ -751,7 +751,7 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
 
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .cursor-glow { display: none; }
 }
 </style>
 </head>
@@ -1108,7 +1108,7 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
           <div class="review reveal">
             <div class="stars-display">★★★★★</div>
             <p>"Booked Nava for our Desi Saturdays slot. Crowd absolutely went off. Pro through and through."</p>
-            <div class="who">— Desi Saturdays</div></div><div class="review reveal"><div class="stars-display">★★★★★</div><p>"DEMO REVIEW - this is the test review for the publish-and-remove walkthrough."</p><div class="who">— Demo Guest, Demo Party</div>
+            <div class="who">— Desi Saturdays</div>
           </div>
         </div>
       </div>
