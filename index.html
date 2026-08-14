@@ -1016,7 +1016,7 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
 
         <!-- CONTACT_BLOCK -->
         <div style="margin-top: 20px; font-size: 14px; color: var(--ink-dim);">
-          <div style="margin-bottom: 8px;">📧 <a style="color: var(--neon-teal);" href="mailto:Navaspinz@gmail.com">Navaspinz@gmail.com</a></div>
+          <div style="margin-bottom: 8px;">📧 <a style="color: var(--neon-teal);" href="mailto:bookings@officialdjnava.com">bookings@officialdjnava.com</a></div>
           <div style="margin-bottom: 8px;">📍 NYC · NJ · Touring worldwide</div>
           <div>🎧 <a style="color: var(--neon-teal);" href="https://soundcloud.com/officialdjnava" target="_blank" rel="noopener">soundcloud.com/officialdjnava</a></div>
         </div>
@@ -1024,19 +1024,18 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
       </div>
 
       <!-- BOOKING FORM
-           Default delivery: opens the visitor's email client pre-filled (mailto:).
-           To swap to Web3Forms later (free, unlimited, no submit limits):
-             1. Go to https://web3forms.com  →  enter your email  →  get an access_key
-             2. Change action="https://api.web3forms.com/submit"
-             3. Inside the form add: <input type="hidden" name="access_key" value="YOUR_KEY">
-             4. Delete the `data-mailto` attribute below (the JS handler skips Web3Forms automatically) -->
+           Delivery: Web3Forms (https://web3forms.com) — submissions are emailed
+           directly to bookings@officialdjnava.com. The access_key below is tied to
+           that address; manage it at https://web3forms.com (login as bookings@). -->
       <form class="fancy reveal" id="booking-form"
-            action="mailto:Navaspinz@gmail.com"
+            action="https://api.web3forms.com/submit"
             method="POST"
-            enctype="text/plain"
-            data-mailto="Navaspinz@gmail.com"
             data-subject="🎧 New Booking Inquiry"
-            data-success-msg="Thanks! Your email app should pop open with the inquiry ready to send — hit Send and DJ Nava will reply within 24 hours.">
+            data-success-msg="Thanks! Your inquiry has been sent — DJ Nava will reply within 24 hours.">
+        <input type="hidden" name="access_key" value="8fb1441c-f08b-43df-b990-35fea276ff31">
+        <input type="hidden" name="subject" value="🎧 New Booking Inquiry">
+        <input type="hidden" name="from_name" value="DJ NAVA Website">
+        <input type="checkbox" name="botcheck" class="hidden" style="display:none;" tabindex="-1" autocomplete="off">
         <div class="field">
           <label for="b-name">Your name</label>
           <input id="b-name" name="name" type="text" required placeholder="Full name" />
@@ -1115,15 +1114,17 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
       </div>
 
       <!-- REVIEW FORM
-           Same mailto: setup as the booking form. To swap to Web3Forms later, follow
-           the steps in the comment above the booking form. -->
+           Same Web3Forms setup as the booking form — reviews are emailed to
+           bookings@officialdjnava.com for approval before being added to the site. -->
       <form class="fancy reveal" id="review-form"
-            action="mailto:Navaspinz@gmail.com"
+            action="https://api.web3forms.com/submit"
             method="POST"
-            enctype="text/plain"
-            data-mailto="Navaspinz@gmail.com"
             data-subject="⭐ New Review for DJ Nava"
-            data-success-msg="Thanks for the love! Your email app should pop open with the review ready to send. After Nava reviews it, it'll appear on the site.">
+            data-success-msg="Thanks for the love! Your review has been sent. After Nava approves it, it'll appear on the site.">
+        <input type="hidden" name="access_key" value="8fb1441c-f08b-43df-b990-35fea276ff31">
+        <input type="hidden" name="subject" value="⭐ New Review for DJ Nava">
+        <input type="hidden" name="from_name" value="DJ NAVA Website">
+        <input type="checkbox" name="botcheck" class="hidden" style="display:none;" tabindex="-1" autocomplete="off">
         <div class="field">
           <label>Your rating</label>
           <div class="stars" aria-label="Rating">
@@ -1380,10 +1381,9 @@ function nudgePlay() {
 });
 
 /* ===== Form handling ============================================================ */
-/* If the form has data-mailto, intercept submit, build a clean mailto: URL with
-   the form fields formatted as the email body, and open the visitor's email app.
-   If you swap action to Web3Forms / Formspree later, just remove the data-mailto
-   attribute and the form will POST normally to that endpoint. */
+/* Forms POST to Web3Forms via fetch() — submissions are emailed straight to
+   bookings@officialdjnava.com. Falls back to the legacy mailto: path only if a
+   form still carries a data-mailto attribute. */
 
 const PRETTY_LABELS = {
   name: 'Name', email: 'Email', phone: 'Phone',
@@ -1429,12 +1429,31 @@ function handleFormSubmit(form) {
       }
       setTimeout(() => form.reset(), 600);
     } else {
-      // Web3Forms / Formspree path — let the form POST normally,
-      // but enhance with a success message on next page.
-      if (success) {
-        success.textContent = successMsg;
-        success.classList.add('show');
-      }
+      // Web3Forms path — AJAX submit, show inline success, no page reload.
+      e.preventDefault();
+      const btn = form.querySelector('button[type="submit"]');
+      const btnText = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+      fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      }).then(r => r.json()).then(res => {
+        if (success) {
+          success.textContent = res.success ? successMsg
+            : 'Hmm, that didn\'t go through. Please try again, or email bookings@officialdjnava.com directly.';
+          success.classList.add('show');
+          success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (res.success) form.reset();
+      }).catch(() => {
+        if (success) {
+          success.textContent = 'Network error — please try again, or email bookings@officialdjnava.com directly.';
+          success.classList.add('show');
+        }
+      }).finally(() => {
+        if (btn) { btn.disabled = false; btn.textContent = btnText; }
+      });
     }
   });
 }
