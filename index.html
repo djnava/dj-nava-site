@@ -496,6 +496,98 @@ form.fancy button[type="submit"]:hover { transform: translateY(-3px); }
 }
 .form-success.show { display: block; }
 
+/* ---------- DATE PICKER (custom calendar popup) ---------- */
+.datepick { position: relative; }
+form.fancy .datepick input.datepick-input {
+  width: 100%; cursor: pointer; padding-right: 40px;
+  background-image: none;
+}
+form.fancy .datepick input.datepick-input::placeholder { color: var(--ink-mute); }
+.datepick-icon {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; pointer-events: none;
+  color: var(--neon-teal); opacity: .75; transition: opacity .2s var(--ease);
+}
+.datepick.open .datepick-icon { opacity: 1; }
+
+.cal {
+  position: absolute; z-index: 60; top: calc(100% + 10px); left: 0;
+  width: 320px; max-width: calc(100vw - 32px); padding: 16px;
+  background: rgba(10, 8, 20, .97);
+  border: 1px solid rgba(168, 85, 247, .35);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.75), var(--glow-purple);
+  backdrop-filter: blur(14px);
+  opacity: 0; transform: translateY(-8px) scale(.98); pointer-events: none;
+  transition: opacity .18s var(--ease), transform .18s var(--ease);
+}
+.cal.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.cal[hidden] { display: none; }
+.cal.drop-up { top: auto; bottom: calc(100% + 10px); }
+.cal.align-right { left: auto; right: 0; }
+
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.cal-title {
+  font-family: 'Bebas Neue', Impact, sans-serif; font-size: 20px; letter-spacing: 1.5px;
+  color: var(--ink); line-height: 1;
+}
+.cal-nav {
+  width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px;
+  color: var(--ink-dim); border: 1px solid rgba(255,255,255,.10);
+  transition: color .15s, border-color .15s, background .15s;
+}
+.cal-nav:hover:not(:disabled) { color: #fff; border-color: var(--neon-teal); background: rgba(34,211,238,.12); }
+.cal-nav:disabled { opacity: .25; cursor: not-allowed; }
+
+.cal-dows {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 6px;
+}
+.cal-dows span {
+  text-align: center; font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--ink-mute); font-weight: 600;
+}
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-day {
+  aspect-ratio: 1 / 1; display: grid; place-items: center; position: relative;
+  border-radius: 10px; font-size: 13px; font-weight: 500; color: var(--ink);
+  border: 1px solid transparent;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.cal-day.empty { pointer-events: none; }
+.cal-day:hover:not(:disabled) { background: rgba(168,85,247,.22); border-color: rgba(168,85,247,.55); }
+.cal-day:focus-visible { outline: 2px solid var(--neon-teal); outline-offset: 1px; }
+.cal-day.today:not(.selected) { border-color: rgba(34,211,238,.6); color: var(--neon-teal); }
+.cal-day.selected {
+  background: linear-gradient(135deg, var(--neon-purple), var(--neon-teal));
+  color: #fff; font-weight: 700; box-shadow: 0 0 18px rgba(168,85,247,.65);
+}
+.cal-day:disabled { color: var(--ink-mute); opacity: .35; cursor: not-allowed; }
+.cal-day.booked { color: var(--neon-pink); opacity: .55; cursor: not-allowed; }
+.cal-day.booked::after {
+  content: ''; position: absolute; left: 22%; right: 22%; top: 50%; height: 1px;
+  background: var(--neon-pink); opacity: .8;
+}
+.cal-foot {
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: 10px; letter-spacing: .5px; color: var(--ink-mute);
+}
+.cal-legend { display: flex; align-items: center; gap: 5px; }
+.cal-legend i {
+  width: 9px; height: 9px; border-radius: 3px; background: var(--neon-pink); opacity: .6; display: block;
+}
+.cal-clear {
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600;
+  color: var(--ink-dim); transition: color .15s;
+}
+.cal-clear:hover { color: var(--neon-teal); }
+
+@media (max-width: 540px) {
+  .cal { left: 50%; right: auto; transform: translate(-50%, -8px) scale(.98); }
+  .cal.show { transform: translate(-50%, 0) scale(1); }
+  .cal.align-right { left: 50%; right: auto; }
+}
+
 /* Star rating */
 .stars { display: flex; gap: 6px; }
 .stars input { display: none; }
@@ -1053,7 +1145,19 @@ form.fancy button[type="submit"] { touch-action: manipulation; }
         <div class="row2">
           <div class="field">
             <label for="b-date">Event date</label>
-            <input id="b-date" name="event_date" type="date" required />
+            <!-- DATE PICKER: custom popup calendar. Past dates and any date listed in
+                 BOOKED_DATES (see the script at the bottom of this file) are blocked. -->
+            <div class="datepick" id="b-date-pick">
+              <input id="b-date" name="event_date" class="datepick-input" type="text"
+                     required inputmode="none" autocomplete="off"
+                     placeholder="Pick a date" aria-haspopup="dialog" aria-expanded="false" />
+              <svg class="datepick-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                <path d="M8 3v4M16 3v4M3 10h18"></path>
+              </svg>
+              <input type="hidden" id="b-date-iso" name="event_date_iso" />
+            </div>
           </div>
           <div class="field">
             <label for="b-type">Event type</label>
@@ -1387,7 +1491,7 @@ function nudgePlay() {
 
 const PRETTY_LABELS = {
   name: 'Name', email: 'Email', phone: 'Phone',
-  event_date: 'Event date', event_type: 'Event type',
+  event_date: 'Event date', event_date_iso: 'Event date (ISO)', event_type: 'Event type',
   venue: 'Venue / Location', message: 'Message',
   rating: 'Rating', event: 'Event / Occasion', review: 'Review'
 };
@@ -1459,6 +1563,242 @@ function handleFormSubmit(form) {
 }
 
 document.querySelectorAll('form.fancy').forEach(handleFormSubmit);
+
+/* ===== Event-date calendar popup ================================================ */
+/*  Replaces the browser's native date input with a themed popup calendar.
+ *
+ *  BLOCKING DATES YOU'RE ALREADY BOOKED ON
+ *  ---------------------------------------
+ *  1. Manual (works right now): add ISO dates to BOOKED_DATES below.
+ *         const BOOKED_DATES = ['2026-10-11', '2026-11-28'];
+ *  2. Automatic from Check Cherry: deploy an /api/availability serverless function
+ *     that returns JSON  { "booked": ["2026-10-11", ...] }  — the calendar fetches it
+ *     on load and merges the result. If the endpoint is missing, it silently falls
+ *     back to the manual list, so the picker never breaks.
+ */
+
+const BOOKED_DATES = [
+  // '2026-10-11',
+];
+
+const AVAILABILITY_ENDPOINT = '/api/availability'; // set to null to skip the fetch
+const MAX_MONTHS_AHEAD = 24;
+
+(function initDatePicker() {
+  const wrap  = document.getElementById('b-date-pick');
+  const input = document.getElementById('b-date');
+  const iso   = document.getElementById('b-date-iso');
+  if (!wrap || !input) return;
+
+  const MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  const DOWS   = ['S','M','T','W','T','F','S'];
+
+  const booked = new Set(BOOKED_DATES);
+
+  const pad    = n => String(n).padStart(2, '0');
+  const key    = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const pretty = d => d.toLocaleDateString('en-US',
+                   { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const lastMonth = new Date(today.getFullYear(), today.getMonth() + MAX_MONTHS_AHEAD, 1);
+
+  let viewY = today.getFullYear();
+  let viewM = today.getMonth();
+  let selected = null;   // Date
+  let focused  = new Date(today);
+
+  const isBlocked = d => d < today || d > lastMonth || booked.has(key(d));
+
+  /* ---- build shell ---- */
+  const cal = document.createElement('div');
+  cal.className = 'cal';
+  cal.setAttribute('role', 'dialog');
+  cal.setAttribute('aria-label', 'Choose your event date');
+  cal.hidden = true;
+  cal.innerHTML = `
+    <div class="cal-head">
+      <button type="button" class="cal-nav" data-step="-1" aria-label="Previous month">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="cal-title" aria-live="polite"></div>
+      <button type="button" class="cal-nav" data-step="1" aria-label="Next month">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+    <div class="cal-dows">${DOWS.map(d => `<span>${d}</span>`).join('')}</div>
+    <div class="cal-grid" role="grid"></div>
+    <div class="cal-foot">
+      <span class="cal-legend"><i></i> Already booked</span>
+      <button type="button" class="cal-clear">Clear</button>
+    </div>`;
+  wrap.appendChild(cal);
+
+  const titleEl = cal.querySelector('.cal-title');
+  const gridEl  = cal.querySelector('.cal-grid');
+  const prevBtn = cal.querySelector('[data-step="-1"]');
+  const nextBtn = cal.querySelector('[data-step="1"]');
+
+  /* ---- render ---- */
+  function render() {
+    titleEl.textContent = `${MONTHS[viewM]} ${viewY}`;
+    prevBtn.disabled = (viewY === today.getFullYear() && viewM === today.getMonth());
+    nextBtn.disabled = (viewY === lastMonth.getFullYear() && viewM === lastMonth.getMonth());
+
+    const firstDow = new Date(viewY, viewM, 1).getDay();
+    const days     = new Date(viewY, viewM + 1, 0).getDate();
+
+    let html = '';
+    for (let i = 0; i < firstDow; i++) html += '<span class="cal-day empty"></span>';
+
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(viewY, viewM, d);
+      const k    = key(date);
+      const isBooked = booked.has(k);
+      const past     = date < today;
+      const disabled = past || isBooked || date > lastMonth;
+      const cls = ['cal-day'];
+      if (isBooked) cls.push('booked');
+      if (date.getTime() === today.getTime()) cls.push('today');
+      if (selected && date.getTime() === selected.getTime()) cls.push('selected');
+      const label = isBooked ? `${pretty(date)} — already booked` : pretty(date);
+      const tab = (date.getTime() === focused.getTime()) ? '0' : '-1';
+      html += `<button type="button" class="${cls.join(' ')}" data-date="${k}" tabindex="${tab}"
+                 aria-label="${label}"${disabled ? ' disabled' : ''}>${d}</button>`;
+    }
+    gridEl.innerHTML = html;
+  }
+
+  const BOTTOM_GUTTER = 96;   // leave room for the sticky now-playing bar
+
+  function place() {
+    cal.classList.remove('drop-up', 'align-right');
+    const r = wrap.getBoundingClientRect();
+    const room = window.innerHeight - BOTTOM_GUTTER;
+    if (r.bottom + 400 > room && r.top > 400) cal.classList.add('drop-up');
+    if (r.left + 320 > window.innerWidth - 16) cal.classList.add('align-right');
+  }
+
+  /* If the popup still runs past the fold, nudge the page so the whole thing shows. */
+  function ensureVisible() {
+    const c = cal.getBoundingClientRect();
+    const overflow = c.bottom - (window.innerHeight - BOTTOM_GUTTER);
+    if (overflow > 0) window.scrollBy({ top: overflow + 12, behavior: 'smooth' });
+    else if (c.top < 12) window.scrollBy({ top: c.top - 12, behavior: 'smooth' });
+  }
+
+  function open() {
+    if (!cal.hidden) return;
+    if (selected) { viewY = selected.getFullYear(); viewM = selected.getMonth(); }
+    focused = selected ? new Date(selected) : new Date(today);
+    render();
+    cal.hidden = false;
+    place();
+    requestAnimationFrame(() => { cal.classList.add('show'); ensureVisible(); });
+    input.setAttribute('aria-expanded', 'true');
+    wrap.classList.add('open');
+  }
+
+  function close(refocus) {
+    if (cal.hidden) return;
+    cal.classList.remove('show');
+    input.setAttribute('aria-expanded', 'false');
+    wrap.classList.remove('open');
+    setTimeout(() => { cal.hidden = true; }, 180);
+    if (refocus) input.focus();
+  }
+
+  function pick(date) {
+    selected = date;
+    input.value = pretty(date);
+    if (iso) iso.value = key(date);
+    input.setCustomValidity('');
+    close(true);
+  }
+
+  function shiftView(step) {
+    const d = new Date(viewY, viewM + step, 1);
+    viewY = d.getFullYear(); viewM = d.getMonth();
+    render();
+  }
+
+  function moveFocus(days) {
+    const next = new Date(focused);
+    next.setDate(next.getDate() + days);
+    if (next < today || next > lastMonth) return;
+    focused = next;
+    if (next.getMonth() !== viewM || next.getFullYear() !== viewY) {
+      viewY = next.getFullYear(); viewM = next.getMonth();
+    }
+    render();
+    const el = gridEl.querySelector(`[data-date="${key(focused)}"]`);
+    if (el) el.focus();
+  }
+
+  /* ---- events ---- */
+  input.addEventListener('mousedown', e => { e.preventDefault(); cal.hidden ? open() : close(); input.focus(); });
+  input.addEventListener('focus', open);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Tab') return;
+    if (['Enter', ' ', 'ArrowDown'].includes(e.key)) { e.preventDefault(); open();
+      const el = gridEl.querySelector('[tabindex="0"]'); if (el) el.focus(); return; }
+    if (e.key === 'Escape') { close(); return; }
+    e.preventDefault();               // the field is pick-only, no typing
+  });
+
+  cal.addEventListener('click', e => {
+    const nav = e.target.closest('.cal-nav');
+    if (nav) { shiftView(Number(nav.dataset.step)); return; }
+    if (e.target.closest('.cal-clear')) {
+      selected = null; input.value = ''; if (iso) iso.value = ''; close(true); return;
+    }
+    const day = e.target.closest('.cal-day[data-date]');
+    if (day && !day.disabled) {
+      const [y, m, d] = day.dataset.date.split('-').map(Number);
+      pick(new Date(y, m - 1, d));
+    }
+  });
+
+  cal.addEventListener('keydown', e => {
+    switch (e.key) {
+      case 'Escape':    e.preventDefault(); close(true); break;
+      case 'ArrowLeft': e.preventDefault(); moveFocus(-1); break;
+      case 'ArrowRight':e.preventDefault(); moveFocus(1);  break;
+      case 'ArrowUp':   e.preventDefault(); moveFocus(-7); break;
+      case 'ArrowDown': e.preventDefault(); moveFocus(7);  break;
+      case 'PageUp':    e.preventDefault(); shiftView(-1); break;
+      case 'PageDown':  e.preventDefault(); shiftView(1);  break;
+    }
+  });
+
+  document.addEventListener('mousedown', e => { if (!wrap.contains(e.target)) close(); });
+  window.addEventListener('resize', () => { if (!cal.hidden) place(); });
+  window.addEventListener('scroll', () => { if (!cal.hidden) place(); }, { passive: true });
+
+  /* Guard against a stale value if a booked date lands on an already-picked day. */
+  input.form && input.form.addEventListener('submit', () => {
+    if (selected && isBlocked(selected)) {
+      input.setCustomValidity('That date is no longer available — please pick another.');
+      input.reportValidity();
+    }
+  }, true);
+
+  render();
+
+  /* ---- optional live availability ---- */
+  if (AVAILABILITY_ENDPOINT) {
+    fetch(AVAILABILITY_ENDPOINT, { headers: { Accept: 'application/json' } })
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        const list = data && (data.booked || data.unavailable || data.dates);
+        if (!Array.isArray(list)) return;
+        list.forEach(d => typeof d === 'string' && booked.add(d.slice(0, 10)));
+        render();
+      })
+      .catch(() => { /* endpoint not deployed yet — manual list stands */ });
+  }
+})();
 </script>
 
 </body>
