@@ -1192,9 +1192,21 @@ src="https://www.facebook.com/tr?id=179566686193408&ev=PageView&noscript=1"
             </select>
           </div>
         </div>
-        <div class="field">
-          <label for="b-venue">Venue / location</label>
-          <input id="b-venue" name="venue" type="text" placeholder="City, venue, or 'TBD'" />
+        <div class="row2">
+          <div class="field">
+            <label for="b-venue">Venue / location</label>
+            <input id="b-venue" name="venue" type="text" placeholder="City, venue, or 'TBD'" />
+          </div>
+          <div class="field">
+            <label for="b-budget">Budget</label>
+            <select id="b-budget" name="budget" required>
+              <option value="">Choose…</option>
+              <option>Less than $500</option>
+              <option>$500 – $1,500</option>
+              <option>$1,500 – $4,000</option>
+              <option>$4,000+</option>
+            </select>
+          </div>
         </div>
         <div class="field">
           <label for="b-msg">Tell me about it</label>
@@ -1510,7 +1522,7 @@ function nudgePlay() {
 const PRETTY_LABELS = {
   name: 'Name', email: 'Email', phone: 'Phone',
   event_date: 'Event date', event_date_iso: 'Event date (ISO)', event_type: 'Event type',
-  venue: 'Venue / Location', message: 'Message',
+  venue: 'Venue / Location', budget: 'Budget', message: 'Message',
   rating: 'Rating', event: 'Event / Occasion', review: 'Review'
 };
 
