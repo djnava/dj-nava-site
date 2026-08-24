@@ -1841,12 +1841,37 @@ const MAX_MONTHS_AHEAD = 24;
 </script>
 
 
-<!-- Meta Pixel events: booking form -> Lead, email/WhatsApp taps -> Contact -->
+<!-- Meta Pixel events: booking form -> Lead (browser + Conversions API with dedup),
+     email/WhatsApp taps -> Contact -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+    return m ? decodeURIComponent(m[2]) : undefined;
+  }
   var bf = document.getElementById("booking-form");
   if (bf) bf.addEventListener("submit", function () {
-    if (window.fbq) fbq("track", "Lead", {content_name: "Booking Inquiry"});
+    // One event_id shared by the browser pixel and the server event so Meta
+    // deduplicates them into a single Lead.
+    var eventId = "lead_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10);
+    if (window.fbq) fbq("track", "Lead", {content_name: "Booking Inquiry"}, {eventID: eventId});
+    var v = function (n) { var el = bf.querySelector('[name="' + n + '"]'); return el ? el.value : undefined; };
+    try {
+      fetch("/api/meta-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event_id: eventId,
+          email: v("email"),
+          phone: v("phone"),
+          name: v("name"),
+          fbp: getCookie("_fbp"),
+          fbc: getCookie("_fbc"),
+          source_url: location.href
+        }),
+        keepalive: true
+      }).catch(function () {});
+    } catch (e) {}
   });
   document.querySelectorAll('a[href^="mailto"], a[href*="wa.me"], a[href*="whatsapp"]')
     .forEach(function (a) {
