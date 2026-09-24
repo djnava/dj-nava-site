@@ -1,5 +1,6 @@
 {
   "redirects": [
-    { "source": "/khairmangdi", "destination": "https://youtu.be/UGL4pbgtLzI", "permanent": false }
+    { "source": "/khairmangdi", "destination": "https://youtu.be/UGL4pbgtLzI", "permanent": false },
+    { "source": "/telugumix", "destination": "https://soundcloud.com/officialdjnava/telugu-mix-2026-dj-nava", "permanent": false }
   ]
 }
