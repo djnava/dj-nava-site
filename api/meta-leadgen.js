@@ -5,12 +5,14 @@
 //   1. Someone submits the Instant Form on a Meta lead ad.
 //   2. Meta calls this endpoint (webhook, field "leadgen") with the lead ID.
 //   3. We fetch the answers from the Graph API with the Page access token.
-//   4. We email them through Web3Forms (same inbox as the website booking form).
+//   4. We email them to bookings@officialdjnava.com (Resend, or Web3Forms fallback).
 //
 // Env vars (Vercel > Project > Settings > Environment Variables):
 //   META_PAGE_TOKEN          = long-lived Page access token (leads_retrieval permission)
 //   META_LEADGEN_VERIFY      = optional; webhook "Verify token" (defaults to the public phrase below)
-//   WEB3FORMS_KEY            = optional; defaults to the site's existing Web3Forms key
+//   RESEND_API_KEY           = Resend API key (free account signed up with bookings@officialdjnava.com)
+//   LEADS_TO / LEADS_FROM    = optional overrides for recipient / sender
+//   WEB3FORMS_KEY            = optional fallback; defaults to the site's existing Web3Forms key
 //
 // Health check / test email: GET /api/meta-leadgen?selftest=<verify phrase>
 
@@ -36,11 +38,35 @@ const labelFor = (name) =>
   }[name] || name.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()));
 
 async function sendEmail(subject, lines, replyTo, fromName) {
+  const text = lines.join("\n");
+
+  // Preferred: Resend (free plan, server-side friendly). Set RESEND_API_KEY in Vercel.
+  if (process.env.RESEND_API_KEY) {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: process.env.LEADS_FROM || `${fromName || "Instagram Lead Ad"} <onboarding@resend.dev>`,
+        to: [process.env.LEADS_TO || "bookings@officialdjnava.com"],
+        subject,
+        text,
+        reply_to: replyTo || undefined,
+      }),
+    });
+    const raw = await r.text();
+    if (!r.ok) throw new Error(`resend ${r.status}: ${raw.slice(0, 300)}`);
+    return raw;
+  }
+
+  // Fallback: Web3Forms (may block server-side requests on the free plan)
   const body = {
     access_key: process.env.WEB3FORMS_KEY || DEFAULT_W3F_KEY,
     subject,
     from_name: fromName || "Instagram Lead Ad",
-    message: lines.join("\n"),
+    message: text,
   };
   if (replyTo) body.replyto = replyTo;
   const r = await fetch("https://api.web3forms.com/submit", {
@@ -48,8 +74,10 @@ async function sendEmail(subject, lines, replyTo, fromName) {
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(body),
   });
-  const out = await r.json().catch(() => ({}));
-  if (!r.ok || out.success === false) throw new Error("web3forms: " + JSON.stringify(out));
+  const raw = await r.text();
+  let out = {};
+  try { out = JSON.parse(raw); } catch (_) {}
+  if (!r.ok || out.success === false) throw new Error(`web3forms ${r.status}: ${raw.slice(0, 300)}`);
   return out;
 }
 
@@ -109,7 +137,7 @@ module.exports = async (req, res) => {
         undefined,
         "Instagram Lead Ad (test)"
       );
-      return res.status(200).json({ ok: true, page_token_set: !!process.env.META_PAGE_TOKEN });
+      return res.status(200).json({ ok: true, page_token_set: !!process.env.META_PAGE_TOKEN, resend_set: !!process.env.RESEND_API_KEY });
     } catch (e) {
       return res.status(502).json({ ok: false, error: String(e.message || e) });
     }
