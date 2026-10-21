@@ -9,12 +9,15 @@
 //
 // Env vars (Vercel > Project > Settings > Environment Variables):
 //   META_PAGE_TOKEN          = long-lived Page access token (leads_retrieval permission)
-//   META_LEADGEN_VERIFY      = any phrase; must match "Verify token" in the Meta app webhook setup
+//   META_LEADGEN_VERIFY      = optional; webhook "Verify token" (defaults to the public phrase below)
 //   WEB3FORMS_KEY            = optional; defaults to the site's existing Web3Forms key
 //
-// Health check / test email: GET /api/meta-leadgen?selftest=<META_LEADGEN_VERIFY>
+// Health check / test email: GET /api/meta-leadgen?selftest=<verify phrase>
 
 const GRAPH = "https://graph.facebook.com/v21.0";
+// Not a secret: it only confirms to Meta that this URL belongs to us. Leads can only be
+// read with META_PAGE_TOKEN, so a fake webhook call cannot pull or send anything.
+const VERIFY = process.env.META_LEADGEN_VERIFY || "djnava-leads";
 const DEFAULT_W3F_KEY = "8fb1441c-f08b-43df-b990-35fea276ff31"; // already public in index.html
 
 const readRaw = (req) =>
@@ -81,7 +84,7 @@ module.exports = async (req, res) => {
 
   // Meta webhook verification handshake
   if (req.method === "GET" && q["hub.mode"] === "subscribe") {
-    if (process.env.META_LEADGEN_VERIFY && q["hub.verify_token"] === process.env.META_LEADGEN_VERIFY) {
+    if (q["hub.verify_token"] === VERIFY) {
       return res.status(200).send(q["hub.challenge"]);
     }
     return res.status(403).send("verify token mismatch");
@@ -89,7 +92,7 @@ module.exports = async (req, res) => {
 
   // Self test: sends a sample email so we can confirm delivery end to end
   if (req.method === "GET" && q.selftest) {
-    if (!process.env.META_LEADGEN_VERIFY || q.selftest !== process.env.META_LEADGEN_VERIFY) {
+    if (q.selftest !== VERIFY) {
       return res.status(403).json({ error: "bad selftest key" });
     }
     try {
